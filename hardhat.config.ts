@@ -1,6 +1,7 @@
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
+import "@nomicfoundation/hardhat-verify";
 import "@primitivefi/hardhat-dodoc";
 import { config as dotenvConfig } from "dotenv";
 import "hardhat-contract-sizer";
@@ -20,7 +21,9 @@ dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
 
 const TEST_MNEMONIC: string = "test test test test test test test test test test test junk";
 const mnemonic: string = process.env.MNEMONIC || TEST_MNEMONIC;
-const privateKey: string = process.env.PRIVATE_KEY || "";
+
+// TODO: change before deployment
+const privateKey: string = process.env.PRIVATE_KEY_MAINNET || "";
 
 /**
  * - If $PRIVATE_KEY is defined, use it.
@@ -30,11 +33,11 @@ const getAccounts = (): HttpNetworkAccountsUserConfig => {
   if (privateKey) {
     // can add as many private keys as you want
     return [
-      `0x${privateKey}`,
-      // `0x${process.env.PRIVATE_KEY_2}`,
-      // `0x${process.env.PRIVATE_KEY_3}`,
-      // `0x${process.env.PRIVATE_KEY_4}`,
-      // `0x${process.env.PRIVATE_KEY_5}`,
+      `${privateKey}`,
+      // `${process.env.PRIVATE_KEY_2}`,
+      // `${process.env.PRIVATE_KEY_3}`,
+      // `${process.env.PRIVATE_KEY_4}`,
+      // `${process.env.PRIVATE_KEY_5}`,
     ];
   } else {
     // use mnemonic
@@ -83,6 +86,9 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: API_KEYS,
   },
+  sourcify: {
+    enabled: false,
+  },
   gasReporter: {
     enabled: process.env.REPORT_GAS ? true : false,
     currency: "USD",
@@ -102,7 +108,9 @@ const config: HardhatUserConfig = {
     // Local network configs
     anvil: { chainId: 31337, url: "http://127.0.0.1:8545" },
     ganache: { chainId: 1337, url: "http://127.0.0.1:7545" },
-    hardhat: { chainId: 31337},
+    // hardhat: { chainId: 31337},
+    //TODO change network for forking accordingly
+    hardhat: { chainId: 31337, forking: { url: NETWORKS["arbitrum-mainnet"].url, enabled: true } },
     localhost: { chainId: 31337 },
     "truffle-dashboard": {
       url: "http://localhost:24012/rpc",

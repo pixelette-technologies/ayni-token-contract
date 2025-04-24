@@ -12,7 +12,6 @@ import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/acce
 library Errors {
     error NOT_ADMIN();
     error NOT_MINTER();
-    error NOT_BURNER();
     error MAX_SUPPLY_REACHED();
 }
 

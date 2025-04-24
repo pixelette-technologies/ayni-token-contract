@@ -33,7 +33,7 @@ export enum NetworkName {
 
   // POLYGON
   POLYGON_MAINNET = "polygon-mainnet",
-  POLYGON_MUMBAI = "polygon-mumbai",
+  POLYGON_AMOY = "polygon-amoy",
 
   // OPTIMISM
   OPTIMISM_MAINNET = "optimism-mainnet",
@@ -41,7 +41,7 @@ export enum NetworkName {
 
   // ARBITRUM
   ARBITRUM_MAINNET = "arbitrum-mainnet",
-  ARBITRUM_GOERLI = "arbitrum-goerli",
+  ARBITRUM_GOERLI = "arbitrum-sepolia",
 
   // AVALANCHE
   AVALANCHE_MAINNET = "avalanche-mainnet",
@@ -85,11 +85,13 @@ export const NETWORKS: { readonly [key in NetworkName]: Network } = {
   // MATIC/POLYGON
   [NetworkName.POLYGON_MAINNET]: {
     chainId: 137,
-    url: infuraUrl("polygon-mainnet"),
+    //TODO: update RPC
+    // url: infuraUrl("polygon-mainnet"),
+    url: "https://polygon-rpc.com/",
   },
-  [NetworkName.POLYGON_MUMBAI]: {
-    chainId: 80_001,
-    url: infuraUrl("polygon-mumbai"),
+  [NetworkName.POLYGON_AMOY]: {
+    chainId: 80_002,
+    url: infuraUrl("polygon-amoy"),
   },
 
   // OPTIMISM
