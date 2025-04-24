@@ -110,7 +110,7 @@ const config: HardhatUserConfig = {
     ganache: { chainId: 1337, url: "http://127.0.0.1:7545" },
     // hardhat: { chainId: 31337},
     //TODO change network for forking accordingly
-    hardhat: { chainId: 31337, forking: { url: NETWORKS["arbitrum-mainnet"].url, enabled: true } },
+    hardhat: { chainId: 31337, forking: { url: NETWORKS["arbitrum-mainnet"].url, enabled: false } },
     localhost: { chainId: 31337 },
     "truffle-dashboard": {
       url: "http://localhost:24012/rpc",
