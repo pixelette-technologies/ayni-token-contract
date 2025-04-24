@@ -1,0 +1,24 @@
+{
+  "[solidity]": {
+    "editor.defaultFormatter": "JuanBlanco.solidity"
+  },
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "dotenv.enableAutocloaking": true,
+  "editor.formatOnSave": true,
+  "evenBetterToml.formatter.arrayAutoExpand": true,
+  "evenBetterToml.formatter.indentEntries": true,
+  "evenBetterToml.formatter.indentTables": true,
+  "evenBetterToml.formatter.reorderKeys": true,
+  "files.associations": {
+    ".gas-snapshot": "julia"
+  },
+  "npm.exclude": "**/lib/**",
+  "search.exclude": { "**/node_modules": true, "lib": true },
+  "solidity.formatter": "forge",
+  "yaml.schemas": {
+    "file:///home/waqas/.vscode/extensions/atlassian.atlascode-3.0.10/resources/schemas/pipelines-schema.json": "bitbucket-pipelines.yml",
+    "https://www.artillery.io/schema.json": []
+  }
+}
