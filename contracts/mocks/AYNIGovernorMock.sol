@@ -19,7 +19,7 @@ library Errors {
     error INVALID_PROPOSAL_THRESHOLD();
 }
 
-contract AYNIGovernor is
+contract AYNIGovernorMock is
     GovernorSettingsUpgradeable,
     GovernorCountingSimpleUpgradeable,
     GovernorVotesQuorumFractionUpgradeable,
@@ -180,6 +180,10 @@ contract AYNIGovernor is
 
     function proposalThreshold() public view override(GovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
         return super.proposalThreshold();
+    }
+
+    function testUpgradeability() external pure returns (string memory) {
+        return "true";
     }
 
 }
