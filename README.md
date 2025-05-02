@@ -12,24 +12,16 @@
 - [Usage](#usage)
     - [Pre Requisites](#pre-requisites)
     - [Lint Solidity](#lint-solidity)
-  - [Foundry](#foundry)
-    - [Build or Compile](#build-or-compile)
-    - [Coverage](#coverage)
-    - [Clean](#clean)
-    - [Deploy](#deploy)
-    - [Gas Usage](#gas-usage)
-    - [Test](#test)
-  - [Notes](#notes)
   - [Hardhat](#hardhat)
     - [Run a Hardhat chain](#run-a-hardhat-chain)
     - [Compile](#compile)
     - [TypeChain](#typechain)
-    - [Test](#test-1)
+    - [Test](#test)
     - [Lint TypeScript](#lint-typescript)
     - [Forking mainnet](#forking-mainnet)
-    - [Coverage](#coverage-1)
-    - [Clean](#clean-1)
-    - [Deploy](#deploy-1)
+    - [Coverage](#coverage)
+    - [Clean](#clean)
+    - [Deploy](#deploy)
     - [Generate Natspec Doc](#generate-natspec-doc)
     - [View Contracts Size](#view-contracts-size)
   - [Verify Contract](#verify-contract)
@@ -54,18 +46,14 @@ $ nvm use
 Then, install dependencies
 
 ```sh
-$ make setup # install Forge and Node.js deps
+$ make setup # install Node.js deps
 ```
 
 or
 
 ```sh
 $ yarn install
-$ forge install
 ```
-
-If this is your first time with Foundry, check out the
-[installation](https://github.com/foundry-rs/foundry#installation) instructions.
 
 ## Features
 
@@ -76,9 +64,6 @@ For example, for Hardhat, you can refer to the [Hardhat Tutorial](https://hardha
 the [Hardhat Docs](https://hardhat.org/docs). You might be in particular interested in reading the
 [Testing Contracts](https://hardhat.org/tutorial/testing-contracts) section.
 
-For example, for Foundry, you can refer to the [Foundry Book](https://book.getfoundry.sh/). You
-might be in particular interested in reading the
-[Writing Tests](https://book.getfoundry.sh/forge/writing-tests.html) guide.
 
 ### Sensible Defaults
 
@@ -95,9 +80,7 @@ This template comes with sensible default configurations in the following files:
 ├── .solhintignore
 ├── .solhint.json
 ├── .yarnrc.yml
-├── foundry.toml
 ├── hardhat.config.ts
-└── remappings.txt
 ```
 
 ### GitHub Actions
@@ -112,16 +95,11 @@ You can edit the CI script in [.github/workflows/ci.yml](./.github/workflows/ci.
 
 ## Installing Dependencies
 
-Foundry typically uses git submodules to manage dependencies, but this template uses Node.js
-packages because [submodules don't scale](https://twitter.com/PaulRBerg/status/1736695487057531328).
-
 This is how to install dependencies:
 
-1. Install the dependency using your preferred package manager, e.g.
+    Install the dependency using your preferred package manager, e.g.
    `yarn add dependency-name:dependency-url`
    - Use this syntax to install from GitHub: `yarn add repo-name@github:username/repo-name#tag-name`
-2. Add a remapping for the dependency in [remappings.txt](./remappings.txt), e.g.
-   `dependency-name=node_modules/dependency-name`
 
 Note that OpenZeppelin Contracts is pre-installed, so you can follow that as an example.
 
@@ -146,90 +124,6 @@ Lint the Solidity code:
 ```sh
 $ yarn lint:sol
 ```
-
-## Foundry
-
-Here's a list of the most frequently needed commands.
-
-### Build or Compile
-
-Build the contracts:
-
-```sh
-$ forge build
-```
-
-### Coverage
-
-Get a test coverage report:
-
-```sh
-$ forge coverage
-```
-
-To get local HTMl reports:
-
-```
-$ make foundry-report
-```
-
-For this to work, you need to have [lcov](https://github.com/linux-test-project/lcov) installed.
-
-### Clean
-
-Delete the build artifacts and cache directories:
-
-```sh
-$ forge clean
-```
-
-### Deploy
-
-Deploy to Anvil:
-
-```sh
-# Spin up an anvil local node
-$ anvil
-
-# On another terminal
-$ forge script scripts/foundry/DeployLock.s.sol:DeployLock \
-  --fork-url localhost \
-  --broadcast \
-  -vvvv
-```
-
-For this script to work for testnet or mainnet, refer to [Pre Requisites](#pre-requisites).
-
-For instructions on how to deploy to a testnet or mainnet, check out the
-[Solidity Scripting tutorial](https://book.getfoundry.sh/tutorials/solidity-scripting.html).
-
-### Gas Usage
-
-Get a gas report:
-
-```sh
-$ forge test --gas-report
-```
-
-### Test
-
-Run the tests:
-
-```sh
-$ forge test
-```
-
-You can also use
-[console.log](https://book.getfoundry.sh/faq?highlight=console.log#how-do-i-use-consolelog), whose
-logs you can see in the terminal output by adding the `-vvvv` flag.
-
-## Notes
-
-1. Foundry piggybacks off [git submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules) to
-   manage dependencies. There's a [guide](https://book.getfoundry.sh/projects/dependencies.html)
-   about how to work with dependencies in the book.
-2. You don't have to create a `.env` file, but filling in the environment variables may be useful
-   when debugging and testing against a mainnet fork.
 
 ## Hardhat
 
@@ -268,13 +162,6 @@ or
 
 $ yarn test:gas         # shows gas report and contract size
 
-or
-
-$ yarn test:trace       # shows logs + calls
-
-or
-
-$ yarn test:fulltrace   # shows logs + calls + sloads + sstores
 ```
 
 Optional:
@@ -324,16 +211,29 @@ $ yarn clean
 
 ### Deploy
 
-Deploy the contracts to Hardhat Network:
+Deploy all the contracts to Hardhat Network:
 
 ```sh
 $ yarn deploy
 ```
 
+Deploy AYNI Token contract only
+
+```sh
+$ yarn deploy-hardhat:token
+```
+
+Deploy AYNI Token and Governance related contracts
+
+```sh
+$ deploy-hardhat:tokenWithGovernor
+```
+
+
 Deploy the contracts to a specific network, such as the Goerli testnet:
 
 ```sh
-$ yarn deploy:network goerli
+$ yarn deploy:network hardhat
 ```
 
 For more information on deploy check out repo
@@ -386,7 +286,8 @@ Set block explorer api key in `.env` file or using command, refer to `.env.examp
 insight.
 
 Example deploy script with `verifyContract` function is
-[00_deploy_lock_contract.ts](./deploy/00_deploy_lock_contract.ts)
+[00_aynitoken.ts](./deploy/00_aynitoken.ts)
+[01_governor.ts](./deploy/01_governor.ts)
 
 ## Syntax Highlighting
 
@@ -409,4 +310,3 @@ Contributions are always welcome! Open a PR or an issue!
 ## Resources
 
 - [Hardhat Documentation](https://hardhat.org/getting-started/)
-- [Foundry Book](https://book.getfoundry.sh/)
