@@ -180,6 +180,32 @@ export default function shouldBehaveLikeGovernorProposal(): void {
             await governor.connect(voter).cancel(targets, values, data, hashDescription)
 
         })
+
+        it("should revert with GovernorOnlyExecutor when non-governor tries to change governance parameters", async function () {
+            const nonGovernorAccount = this.signers.accounts[1];
+            const governor = this.contracts.ayniGovernor;
+
+            // Try to set voting period
+            const newVotingPeriod = 5 * 86400; // 5 days
+            await expect(
+                governor.connect(nonGovernorAccount).setVotingPeriod(newVotingPeriod)
+            ).to.be.revertedWithCustomError(governor, "GovernorOnlyExecutor")
+                .withArgs(await nonGovernorAccount.getAddress());
+
+            // Try to set voting delay
+            const newVotingDelay = 3 * 86400; // 3 days
+            await expect(
+                governor.connect(nonGovernorAccount).setVotingDelay(newVotingDelay)
+            ).to.be.revertedWithCustomError(governor, "GovernorOnlyExecutor")
+                .withArgs(await nonGovernorAccount.getAddress());
+
+            // Try to set proposal threshold
+            const newProposalThreshold = ethers.parseUnits("15000000", 18);
+            await expect(
+                governor.connect(nonGovernorAccount).setProposalThreshold(newProposalThreshold)
+            ).to.be.revertedWithCustomError(governor, "GovernorOnlyExecutor")
+                .withArgs(await nonGovernorAccount.getAddress());
+})
         
     });
 
