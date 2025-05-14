@@ -41,7 +41,7 @@ contract AYNIGovernor is
     uint256 public constant MIN_VOTING_PERIOD = 86400; // 1 day, in seconds
 
     /// @notice The max setable voting period
-    uint256 public constant MAX_VOTING_PERIOD = 10 * 86400; // 7 days, in seconds
+    uint256 public constant MAX_VOTING_PERIOD = 10 * 86400; // 10 days, in seconds
 
     /// @notice The min setable voting delay
     uint256 public constant MIN_VOTING_DELAY = 86400; // 1 day, in seconds
