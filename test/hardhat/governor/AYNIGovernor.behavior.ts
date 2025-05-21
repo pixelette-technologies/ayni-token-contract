@@ -1,4 +1,5 @@
 import shouldBehaveLikeGovernorProposal from "./effects/proposal";
+import shouldBehaveLikeGovernorUpdateParams from "./effects/updateparams";
 import shouldBehaveLikeGovernorUpgradeable from "./effects/upgrade";
 
 export function shouldBehaveLikeGovernorContract(): void {
@@ -11,6 +12,11 @@ export function shouldBehaveLikeGovernorContract(): void {
         describe("proposal creation, voting and execution", function() {
             
             shouldBehaveLikeGovernorProposal();
+        })
+
+        describe("update new parameters with validation checks", function() {
+
+            shouldBehaveLikeGovernorUpdateParams();
         })
 
     });

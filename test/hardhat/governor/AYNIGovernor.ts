@@ -4,10 +4,10 @@ import { shouldBehaveLikeGovernorContract } from "./AYNIGovernor.behavior";
 export function testAYNIGovernor(): void {
   describe("AYNIGovernor", function () {
     beforeEach(async function () {
-      const { ayniGovernor, ayniGovernorImplementation } = await this.loadFixture(helperConfigFixture);
-
+      const { ayniGovernor, ayniTimelock, ayniGovernorImplementation } = await this.loadFixture(helperConfigFixture);
       this.contracts.ayniGovernor = ayniGovernor;
       this.contracts.ayniGovernorImplementation = ayniGovernorImplementation;
+      this.contracts.ayniTimelockController = ayniTimelock;
 
     });
 

@@ -1,3 +1,4 @@
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
@@ -11,10 +12,50 @@ export default function shouldBehaveLikeGovernorUpgradeable(): void {
             const newImplementation = await ayniGovernorMock.getAddress();
             const ayniTokenTimeLockControllerProxyAddress = await this.contracts.ayniGovernor.getAddress();
 
-            await this.contracts.ayniGovernor.upgradeToAndCall(newImplementation, "0x")
+            const governor = this.contracts.ayniGovernor
 
-            const ayniTokenUpgraded = await ethers.getContractAt("AYNIGovernorMock", ayniTokenTimeLockControllerProxyAddress);
-            expect(await ayniTokenUpgraded.testUpgradeability()).to.be.equal("true");
+            const maxSupply = await this.contracts.ayniToken.MAX_SUPPLY()
+            await this.contracts.ayniToken.mint(this.signers.deployer.address, maxSupply)
+            const voter = this.signers.accounts[0];
+            await this.contracts.ayniToken.delegate(voter.address)
+
+            const targetContract = this.contracts.ayniGovernor.getAddress()
+            const targets = [targetContract];
+            const values = ["0"]
+            const data = [this.contracts.ayniGovernor.interface.encodeFunctionData('upgradeToAndCall', [newImplementation, "0x"])]
+            const description = "Updating Implementation of AYNI Governor Contract"
+
+            const hashDescription = ethers.id(description)
+
+            await governor.connect(voter).propose(targets, values, data, description);
+
+            const proposalId = await governor.getProposalId(targets, values, data, hashDescription);
+            const timepointStart = await governor.proposalSnapshot(proposalId);
+            await time.increaseTo(timepointStart);
+
+            const voteType = 1; // For Vote
+            await governor.connect(voter).castVote(proposalId, voteType)
+
+            const timepointDeadline = await governor.proposalDeadline(proposalId);
+            await time.increaseTo(timepointDeadline);
+
+            const PROPOSER_ROLE = ethers.id('PROPOSER_ROLE');
+            const EXECUTOR_ROLE = ethers.id('EXECUTOR_ROLE');
+
+            await this.contracts.ayniTimelockController.grantRole(PROPOSER_ROLE, await governor.getAddress());
+            await this.contracts.ayniTimelockController.grantRole(EXECUTOR_ROLE, await governor.getAddress());
+
+            expect(await governor.proposalNeedsQueuing(proposalId)).to.equal(true)
+
+            await governor.queue(targets, values, data, hashDescription)
+
+            const timestamp = await governor.proposalEta(proposalId);
+
+            await time.increaseTo(timestamp);
+            await expect(governor.execute(targets, values, data, hashDescription)).to.emit(this.contracts.ayniGovernor, 'Upgraded').withArgs(newImplementation);
+
+            const ayniGovernorUpgraded = await ethers.getContractAt("AYNIGovernorMock", ayniTokenTimeLockControllerProxyAddress);
+            expect(await ayniGovernorUpgraded.testUpgradeability()).to.be.equal("true");
 
         })
 
@@ -24,7 +65,48 @@ export default function shouldBehaveLikeGovernorUpgradeable(): void {
             const erc20Mock = await ERC20MockFactory.deploy();
 
             const unSupportedImplementation = await erc20Mock.getAddress();
-            await expect(this.contracts.ayniGovernor.upgradeToAndCall(unSupportedImplementation, "0x")).to.be.revertedWithCustomError(this.contracts.ayniGovernor, "ERC1967InvalidImplementation")
+
+            const governor = this.contracts.ayniGovernor
+
+            const maxSupply = await this.contracts.ayniToken.MAX_SUPPLY()
+            await this.contracts.ayniToken.mint(this.signers.deployer.address, maxSupply)
+            const voter = this.signers.accounts[0];
+            await this.contracts.ayniToken.delegate(voter.address)
+
+            const targetContract = this.contracts.ayniGovernor.getAddress()
+            const targets = [targetContract];
+            const values = ["0"]
+            const data = [this.contracts.ayniGovernor.interface.encodeFunctionData('upgradeToAndCall', [unSupportedImplementation, "0x"])]
+            const description = "Updating Implementation of AYNI Governor Contract"
+
+            const hashDescription = ethers.id(description)
+
+            await governor.connect(voter).propose(targets, values, data, description);
+
+            const proposalId = await governor.getProposalId(targets, values, data, hashDescription);
+            const timepointStart = await governor.proposalSnapshot(proposalId);
+            await time.increaseTo(timepointStart);
+
+            const voteType = 1; // For Vote
+            await governor.connect(voter).castVote(proposalId, voteType)
+
+            const timepointDeadline = await governor.proposalDeadline(proposalId);
+            await time.increaseTo(timepointDeadline);
+
+            const PROPOSER_ROLE = ethers.id('PROPOSER_ROLE');
+            const EXECUTOR_ROLE = ethers.id('EXECUTOR_ROLE');
+
+            await this.contracts.ayniTimelockController.grantRole(PROPOSER_ROLE, await governor.getAddress());
+            await this.contracts.ayniTimelockController.grantRole(EXECUTOR_ROLE, await governor.getAddress());
+
+            expect(await governor.proposalNeedsQueuing(proposalId)).to.equal(true)
+
+            await governor.queue(targets, values, data, hashDescription)
+
+            const timestamp = await governor.proposalEta(proposalId);
+
+            await time.increaseTo(timestamp);
+            await expect(governor.execute(targets, values, data, hashDescription)).to.be.revertedWithCustomError(this.contracts.ayniGovernor, "ERC1967InvalidImplementation")
 
         });
 
@@ -32,7 +114,7 @@ export default function shouldBehaveLikeGovernorUpgradeable(): void {
 
             const currentTokenImpl = await this.contracts.ayniGovernorImplementation.getAddress()
 
-            await expect(this.contracts.ayniGovernor.connect(this.signers.accounts[0]).upgradeToAndCall(currentTokenImpl, "0x")).to.be.revertedWithCustomError(this.contracts.ayniGovernor, "NOT_ADMIN");
+            await expect(this.contracts.ayniGovernor.connect(this.signers.accounts[0]).upgradeToAndCall(currentTokenImpl, "0x")).to.be.revertedWithCustomError(this.contracts.ayniGovernor, "GovernorOnlyExecutor");
 
         })
 

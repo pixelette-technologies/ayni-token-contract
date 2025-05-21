@@ -13,7 +13,6 @@ export async function helperConfigFixture(): Promise<{
     ayniToken: AYNIToken;
     ayniTokenImplementation: AYNIToken,
     ayniTimelock: AYNITimelockController;
-    ayniTimelockImplementation: AYNITimelockController;
     ayniGovernor: AYNIGovernor;
     ayniGovernorImplementation: AYNIGovernor;
 }> {
@@ -53,32 +52,16 @@ export async function helperConfigFixture(): Promise<{
 
     /*//////////////////////////////////////////////////////////////
                                  GOVERNOR DEPLOYMENT
-        //////////////////////////////////////////////////////////////*/
+    //////////////////////////////////////////////////////////////*/
 
     const proposers = [admin];
     const executors = [admin];
     const minDelay = 86400; // 1 day in seconds
 
     // Deploy the Timelock contract
-    const timelockArgs = [minDelay, proposers, executors, admin];
 
-    const ayniTimelock = await upgrades.deployProxy(
-        AYNITimelockControllerFactory,
-        timelockArgs, // initialze function arguments
-        {
-            initializer: "initialize",
-            kind: "uups",
-        }
-    );
-
-    await ayniTimelock.waitForDeployment()
-
-    const ayniTimeLockImplAddress = await upgrades.erc1967.getImplementationAddress(
-        await ayniTimelock.getAddress()
-    );
-
-    const ayniTimelockImplementation = await ethers.getContractAt("AYNITimelockController",ayniTimeLockImplAddress)
-
+     const ayniTimelock = await AYNITimelockControllerFactory.deploy(minDelay, proposers, executors, admin)
+     await ayniTimelock.waitForDeployment();
 
     // Deploy the Governor contract
 
@@ -112,5 +95,5 @@ export async function helperConfigFixture(): Promise<{
     const ayniGovernorImplementation = await ethers.getContractAt("AYNIGovernor",ayniGovernorImplAddress)
 
 
-    return { ayniToken, ayniTokenImplementation, ayniTimelock, ayniTimelockImplementation,  ayniGovernor, ayniGovernorImplementation };
+    return { ayniToken, ayniTokenImplementation, ayniTimelock,  ayniGovernor, ayniGovernorImplementation };
 }
