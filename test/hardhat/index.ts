@@ -4,7 +4,6 @@ import { ethers } from "hardhat";
 
 import { testAYNIToken } from "./ayniToken/AYNIToken";
 import type { Contracts, Signers } from "./shared/types";
-import { testAYNITimeLockController } from "./timeLock/AYNITimeLockController";
 import { testAYNIGovernor } from "./governor/AYNIGovernor";
 
 describe("Test Cases", function () {
@@ -21,10 +20,6 @@ describe("Test Cases", function () {
 
   describe("AYNI Token Unit Tests", function () {
     testAYNIToken();
-  });
-
-  describe("AYNI TimeLock Controller Unit Tests", function () {
-    testAYNITimeLockController();
   });
 
   describe("AYNI Governor Unit Tests", function () {

@@ -1,8 +1,8 @@
 import type { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 
 import type { AYNIToken } from "../../../types/contracts/AYNIToken.sol";
-import type { AYNIGovernor } from "../../../types/contracts/AYNIGovernor";
 import type { AYNITimelockController } from "../../../types/contracts/AYNITimelockController";
+import { AYNIGovernor } from "../../../types";
 
 type Fixture<T> = () => Promise<T>;
 
@@ -20,7 +20,6 @@ export interface Contracts {
   ayniGovernor: AYNIGovernor;
   ayniGovernorImplementation: AYNIGovernor;
   ayniTimelockController: AYNITimelockController;
-  ayniTimelockControllerImplementation: AYNITimelockController;
 }
 
 export interface Signers {

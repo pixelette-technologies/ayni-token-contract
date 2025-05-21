@@ -8,9 +8,8 @@ import {ERC20VotesUpgradeable} from "@openzeppelin/contracts-upgradeable/token/E
 import {NoncesUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/NoncesUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-
 library Errors {
-    error NOT_ADMIN();
+    error NOT_GOVERNOR();
     error NOT_MINTER();
     error MAX_SUPPLY_REACHED();
 }
@@ -22,12 +21,14 @@ contract AYNIToken is ERC20BurnableUpgradeable, ERC20PermitUpgradeable, ERC20Vot
 
     // ROLES
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant GOVERNANCE_ROLE = keccak256("GOVERNOR_ROLE");
 
     uint256 public constant MAX_SUPPLY = 806_451_613 * 10 ** 18;
 
-    modifier onlyAdmin () {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-            revert Errors.NOT_ADMIN();
+    modifier onlyGovernance () {
+        /// @dev: timelock contract will be the governor contract to update the implementation of the token
+        if (!hasRole(GOVERNANCE_ROLE, msg.sender)) {
+            revert Errors.NOT_GOVERNOR();
         }
         _;
     }
@@ -51,6 +52,8 @@ contract AYNIToken is ERC20BurnableUpgradeable, ERC20PermitUpgradeable, ERC20Vot
         __ERC20Burnable_init();
         __AccessControl_init();
         __UUPSUpgradeable_init();
+        _setRoleAdmin(MINTER_ROLE, DEFAULT_ADMIN_ROLE);
+        _setRoleAdmin(GOVERNANCE_ROLE, DEFAULT_ADMIN_ROLE);
         _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
         _grantRole(MINTER_ROLE, initialOwner);
     }
@@ -75,7 +78,7 @@ contract AYNIToken is ERC20BurnableUpgradeable, ERC20PermitUpgradeable, ERC20Vot
 
 
     function _authorizeUpgrade(address newImplementation)
-    internal onlyAdmin override {}
+    internal onlyGovernance() override {}
 
 
     /*//////////////////////////////////////////////////////////////

@@ -1,18 +1,23 @@
 import { ethers, upgrades } from "hardhat";
-import type { DeployFunction } from "hardhat-deploy/types";
+import type { DeployFunction, DeployResult } from "hardhat-deploy/types";
 import type { HardhatRuntimeEnvironment } from "hardhat/types";
 
 import { preDeploy } from "../utils/contracts";
 import { verifyContract } from "../utils/verify";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { getNamedAccounts, getChainId } = hre;
+  const { getNamedAccounts, getChainId, deployments } = hre;
+  const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
 
+  /*//////////////////////////////////////////////////////////////
+                           TOKEN DEPLOYMENT
+  //////////////////////////////////////////////////////////////*/
+
   // initialize Args
   const initialOwner = deployer;
-  const args = [initialOwner];
+  const tokenArgs = [initialOwner];
 
   await preDeploy(deployer, "AYNIToken");
 
@@ -20,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const AYNITokenProxy = await upgrades.deployProxy(
     AYNITokenFactory,
-    args, // initialze function arguments
+    tokenArgs, // initialze function arguments
     {
       initializer: "initialize",
       kind: "uups",
@@ -36,10 +41,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log("AYNI Token Implementation deployed to:", implAddress);
 
   /*//////////////////////////////////////////////////////////////
-                           GOVERNOR DEPLOYMENT
+                           TIMELOCK CONTROLLER DEPLOYMENT
   //////////////////////////////////////////////////////////////*/
-
-  const AYNITimeLockControllerFactory = await hre.ethers.getContractFactory("AYNITimelockController");
 
   const proposers = [deployer];
   const executors = [deployer];
@@ -54,27 +57,25 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     admin
   ];
 
-  const AYNITimeLockController = await upgrades.deployProxy(
-    AYNITimeLockControllerFactory,
-    timelockArgs, // initialze function arguments
-    {
-      initializer: "initialize",
-      kind: "uups",
-    })
+  await preDeploy(deployer, "AYNITimelockController");
+  const timeLock: DeployResult = await deploy("AYNITimelockController", {
+    from: deployer,
+    args: timelockArgs,
+    log: true
+  });
 
-  const AYNITimeLockControllerProxy = await AYNITimeLockController.getAddress();
-  console.log("AYNITimeLockController (Proxy) deployed to:", AYNITimeLockControllerProxy);
+  console.log("AYNITimeLockController deployed to:", timeLock.address);
 
-  const implAddressTimeLock = await upgrades.erc1967.getImplementationAddress(
-    AYNITimeLockControllerProxy
-  );
-  console.log("AYNITimeLockController Implementation deployed to:", implAddressTimeLock);
+  /*//////////////////////////////////////////////////////////////
+                           GOVERNOR DEPLOYMENT
+  //////////////////////////////////////////////////////////////*/
 
+  
   // Deploy the Governor contract
   const AYNIGovernorFactory = await hre.ethers.getContractFactory("AYNIGovernor");
 
   const ayniToken = AYNITokenProxyContractAddress;
-  const timelock = AYNITimeLockControllerProxy;
+  const timelock = timeLock.address;
   const votingDelay = 86400; // 1 day in seconds
   const votingPeriod = 604800; // 7 days in seconds
   const proposalThreshold = ethers.parseUnits("40322580", 18); // 5% of total supply
@@ -111,14 +112,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       await verifyContract({
         contractPath: contractPath,
         contractAddress: implAddress,
-        args: args || [],
+        args: tokenArgs || [],
       });
 
       console.log("AYNIToken Implementation verified on Etherscan");
 
       await verifyContract({
         contractPath: "contracts/AYNITimelockController.sol:AYNITimelockController",
-        contractAddress: implAddressTimeLock,
+        contractAddress: timeLock.address,
         args: timelockArgs || [],
       })
 

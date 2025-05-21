@@ -13,7 +13,7 @@ import {IVotes} from "@openzeppelin/contracts/governance/utils/IVotes.sol";
 
 
 library Errors {
-    error NOT_ADMIN();
+    error NOT_GOVERNOR();
     error INVALID_VOTING_DELAY();
     error INVALID_VOTING_PERIOD();
     error INVALID_PROPOSAL_THRESHOLD();
@@ -49,13 +49,6 @@ contract AYNIGovernor is
     /// @notice The max setable voting delay
     uint256 public constant MAX_VOTING_DELAY = 10 * 86400; // 10 days, in seconds
 
-    modifier onlyAdmin () {
-        if (!hasRole(DEFAULT_ADMIN_ROLE, msg.sender)) {
-            revert Errors.NOT_ADMIN();
-        }
-        _;
-    }
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
@@ -70,6 +63,18 @@ contract AYNIGovernor is
         uint256 _quorumPercentage,
         address _admin
        ) public initializer {
+        if (_initialVotingDelay < MIN_VOTING_DELAY || _initialVotingDelay > MAX_VOTING_DELAY) {
+            revert Errors.INVALID_VOTING_DELAY();
+        }
+
+        if (_initialVotingPeriod < MIN_VOTING_PERIOD || _initialVotingPeriod > MAX_VOTING_PERIOD) {
+            revert Errors.INVALID_VOTING_PERIOD();
+        }
+
+        if (_initialProposalThreshold < MIN_PROPOSAL_THRESHOLD || _initialProposalThreshold > MAX_PROPOSAL_THRESHOLD) {
+            revert Errors.INVALID_PROPOSAL_THRESHOLD();
+        }
+
         __Governor_init("AYNIGovernor");
         __GovernorSettings_init(_initialVotingDelay, _initialVotingPeriod, _initialProposalThreshold);
         __GovernorCountingSimple_init();
@@ -77,11 +82,12 @@ contract AYNIGovernor is
         __GovernorVotesQuorumFraction_init(_quorumPercentage);
         __GovernorTimelockControl_init(_timelock);
         __UUPSUpgradeable_init();
+        __AccessControl_init();
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
     }
 
     function _authorizeUpgrade(address newImplementation)
-    internal onlyAdmin override {}
+    internal onlyGovernance() override {}
 
     // setter functions
         /**

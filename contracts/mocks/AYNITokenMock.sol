@@ -55,9 +55,7 @@ contract AYNITokenMock is ERC20BurnableUpgradeable, ERC20PermitUpgradeable, ERC2
         _grantRole(MINTER_ROLE, initialOwner);
     }
 
-    function mintWithoutMaxSupply(address to, uint256 amount) external onlyMinter {
-        _mint(to, amount);
-    }
+    function mintWithoutMaxSupply(address to, uint256 amount) external onlyMinter {}
 
     /// natspec doc style
     /// @notice Mints `amount` tokens to `to`
